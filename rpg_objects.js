@@ -1770,13 +1770,21 @@ Game_Action.prototype.executeMpDamage = function(target, value) {
 
 Game_Action.prototype.gainDrainedHp = function(value) {
     if (this.isDrain()) {
-        this.subject().gainHp(value);
+        var gainTarget = this.subject();
+        if (this._reflectionTarget !== undefined) {
+            gainTarget = this._reflectionTarget;
+        }
+        gainTarget.gainHp(value);
     }
 };
 
 Game_Action.prototype.gainDrainedMp = function(value) {
     if (this.isDrain()) {
-        this.subject().gainMp(value);
+      var gainTarget = this.subject();
+      if (this._reflectionTarget !== undefined) {
+          gainTarget = this._reflectionTarget;
+      }
+      gainTarget.gainMp(value);
     }
 };
 

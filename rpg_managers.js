@@ -983,7 +983,7 @@ AudioManager.playBgm = function(bgm, pos) {
         this.updateBgmParameters(bgm);
     } else {
         this.stopBgm();
-        if (bgm.name) { 
+        if (bgm.name) {
             if(Decrypter.hasEncryptedAudio && this.shouldUseHtml5Audio()){
                 this.playEncryptedBgm(bgm, pos);
             }
@@ -2343,13 +2343,14 @@ BattleManager.invokeCounterAttack = function(subject, target) {
     action.setAttack();
     action.apply(subject);
     this._logWindow.displayCounter(target);
-    this._logWindow.displayActionResults(subject, subject);
+    this._logWindow.displayActionResults(target, subject);
 };
 
 BattleManager.invokeMagicReflection = function(subject, target) {
+    this._action._reflectionTarget = target;
     this._logWindow.displayReflection(target);
     this._action.apply(subject);
-    this._logWindow.displayActionResults(subject, subject);
+    this._logWindow.displayActionResults(target, subject);
 };
 
 BattleManager.applySubstitute = function(target) {
