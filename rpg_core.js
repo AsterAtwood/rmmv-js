@@ -1,5 +1,5 @@
 //=============================================================================
-// rpg_core.js v1.3.3
+// rpg_core.js v1.3.5
 //=============================================================================
 
 //-----------------------------------------------------------------------------
@@ -180,7 +180,7 @@ Utils.RPGMAKER_NAME = 'MV';
  * @type String
  * @final
  */
-Utils.RPGMAKER_VERSION = "1.3.3";
+Utils.RPGMAKER_VERSION = "1.3.5";
 
 /**
  * Checks whether the option is in the query string.
@@ -355,7 +355,6 @@ CacheEntry.prototype.touch = function () {
         this.touchSeconds = cache.updateSeconds;
     } else if (this.freedByTTL) {
         this.freedByTTL = false;
-        //TODO: shall we log this event? its not normal
         if (!cache._inner[this.key]) {
             cache._inner[this.key] = this;
         }
@@ -658,8 +657,9 @@ Bitmap.snap = function(stage) {
         }
         context.drawImage(canvas, 0, 0);
     } else {
-        //TODO: Ivan: what if stage is not present?
+
     }
+    renderTexture.destroy({ destroyBase: true });
     bitmap._setDirty();
     return bitmap;
 };
@@ -3045,6 +3045,10 @@ TouchInput.isPressed = function() {
     return this._mousePressed || this._screenPressed;
 };
 
+TouchInput.isMousePressed = function() {
+    return this._mousePressed;
+};
+
 /**
  * Checks whether the left mouse button or touchscreen is just pressed.
  *
@@ -3707,7 +3711,6 @@ Sprite.prototype._refresh = function() {
     } else if (this._bitmap) {
         this.texture.frame = Rectangle.emptyRectangle;
     } else {
-        //TODO: remove this
         this.texture.baseTexture.width = Math.max(this.texture.baseTexture.width, this._frame.x + this._frame.width);
         this.texture.baseTexture.height = Math.max(this.texture.baseTexture.height, this._frame.y + this._frame.height);
         this.texture.frame = this._frame;
@@ -5546,11 +5549,6 @@ TilingSprite.prototype.setFrame = function(x, y, width, height) {
 TilingSprite.prototype.updateTransform = function() {
     this.tilePosition.x = Math.round(-this.origin.x);
     this.tilePosition.y = Math.round(-this.origin.y);
-    //TODO: ivan: i really dont know whats these about
-    // if (!this.tilingTexture) {
-    //     this.originalTexture = null;
-    //     this.generateTilingTexture(true);
-    // }
     this.updateTransformTS();
 };
 
@@ -6617,8 +6615,8 @@ WindowLayer.prototype.renderWebGL = function(renderer) {
     var shift = new PIXI.Point();
     var rt = renderer._activeRenderTarget;
     var projectionMatrix = rt.projectionMatrix;
-    shift.x = (projectionMatrix.tx + 1) / 2 * rt.size.width;
-    shift.y = (projectionMatrix.ty + 1) / 2 * rt.size.height;
+    shift.x = Math.round((projectionMatrix.tx + 1) / 2 * rt.sourceFrame.width);
+    shift.y = Math.round((projectionMatrix.ty + 1) / 2 * rt.sourceFrame.height);
 
     for (var i = 0; i < this.children.length; i++) {
         var child = this.children[i];
@@ -7273,6 +7271,16 @@ WebAudio._createMasterGainNode = function() {
  * @private
  */
 WebAudio._setupEventHandlers = function() {
+    document.addEventListener("touchend", function() {
+            var context = WebAudio._context;
+            if (context && context.state === "suspended" && typeof context.resume === "function") {
+                context.resume().then(function() {
+                    WebAudio._onTouchStart();
+                })
+            } else {
+                WebAudio._onTouchStart();
+            }
+    });
     document.addEventListener('touchstart', this._onTouchStart.bind(this));
     document.addEventListener('visibilitychange', this._onVisibilityChange.bind(this));
 };
